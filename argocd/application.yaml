@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: onboarding
+  namespace: argocd
+spec:
+  destination:
+    namespace: sonataflow-infra
+    server: https://kubernetes.default.svc
+  project: orchestrator
+  source:
+    path: ./kustomize/base
+    repoURL: git@github.com:condawrangler/onboarding-1111-config.git
+    targetRevision: HEAD
+    kustomize:
+      commonAnnotations:
+        argocd/app-name: onboarding
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

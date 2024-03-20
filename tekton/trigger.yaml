@@ -1,0 +1,56 @@
+# From https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/skeletons/tekton/tekton/triggertemplate.yaml
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: onboarding-run-pipeline
+  namespace: sonataflow-infra
+spec:
+  params:
+    - name: git-revision
+      description: The git revision
+      default: main
+    - name: git-repo-url
+      description: The repo url
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        name: onboarding-pipeline-$(uid)
+        labels:
+          backstage.io/kubernetes-id: onboarding-ci
+      spec:
+        params:
+          - name: gitUrl
+            value: git@github.com:condawrangler/onboarding-1111.git
+          - name: gitConfigUrl
+            value: git@github.com:condawrangler/onboarding-1111-config.git
+          - name: workflowId
+            value: onboarding
+          - name: convertToFlat
+            value: 'true'
+        pipelineRef:
+          name: workflow-deployment
+        workspaces:
+          - name: workflow-source
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+          - name: workflow-config
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+          - name: docker-credentials
+            secret:
+              secretName: docker-credentials
+          - name: ssh-creds
+            secret:
+              secretName: git-ssh-credentials
